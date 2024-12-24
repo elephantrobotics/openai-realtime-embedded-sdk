@@ -83,5 +83,6 @@ void oai_webrtc() {
   while (1) {
     peer_connection_loop(peer_connection);
     vTaskDelay(pdMS_TO_TICKS(TICK_INTERVAL));
+    printf(".");
   }
 }

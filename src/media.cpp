@@ -8,19 +8,19 @@
 #define BUFFER_SAMPLES 320
 
 #define MCLK_PIN 0
-#define DAC_BCLK_PIN 15
-#define DAC_LRCLK_PIN 16
-#define DAC_DATA_PIN 17
-#define ADC_BCLK_PIN 38
-#define ADC_LRCLK_PIN 39
-#define ADC_DATA_PIN 40
+#define DAC_BCLK_PIN 19   // BCLK
+#define DAC_LRCLK_PIN 33  // LRCK
+#define DAC_DATA_PIN 22   // speaker data
+#define ADC_BCLK_PIN 0    // not used
+#define ADC_LRCLK_PIN 33  // same as speaker, 33
+#define ADC_DATA_PIN 23   // mic data
 
 #define OPUS_ENCODER_BITRATE 30000
 #define OPUS_ENCODER_COMPLEXITY 0
 
 void oai_init_audio_capture() {
   i2s_config_t i2s_config_out = {
-      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),  // speaker
       .sample_rate = SAMPLE_RATE,
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
       .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
@@ -35,6 +35,7 @@ void oai_init_audio_capture() {
     printf("Failed to configure I2S driver for audio output");
     return;
   }
+  printf("Configured I2S driver for audio output");
 
   i2s_pin_config_t pin_config_out = {
       .mck_io_num = MCLK_PIN,
@@ -47,10 +48,11 @@ void oai_init_audio_capture() {
     printf("Failed to set I2S pins for audio output");
     return;
   }
+  printf("Set I2S pins for audio output");
   i2s_zero_dma_buffer(I2S_NUM_0);
 
   i2s_config_t i2s_config_in = {
-      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),  // microphone
       .sample_rate = SAMPLE_RATE,
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
       .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
@@ -64,9 +66,10 @@ void oai_init_audio_capture() {
     printf("Failed to configure I2S driver for audio input");
     return;
   }
+  printf("Configured I2S driver for audio input");
 
   i2s_pin_config_t pin_config_in = {
-      .mck_io_num = MCLK_PIN,
+      .mck_io_num = I2S_PIN_NO_CHANGE,
       .bck_io_num = ADC_BCLK_PIN,
       .ws_io_num = ADC_LRCLK_PIN,
       .data_out_num = I2S_PIN_NO_CHANGE,
@@ -76,6 +79,7 @@ void oai_init_audio_capture() {
     printf("Failed to set I2S pins for audio input");
     return;
   }
+  printf("Set I2S pins for audio input");
 }
 
 opus_int16 *output_buffer = NULL;
@@ -88,8 +92,8 @@ void oai_init_audio_decoder() {
     printf("Failed to create OPUS decoder");
     return;
   }
-
   output_buffer = (opus_int16 *)malloc(BUFFER_SAMPLES * sizeof(opus_int16));
+  printf("OPUS decoder Created");
 }
 
 void oai_audio_decode(uint8_t *data, size_t size) {
@@ -127,6 +131,7 @@ void oai_init_audio_encoder() {
   opus_encoder_ctl(opus_encoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
   encoder_input_buffer = (opus_int16 *)malloc(BUFFER_SAMPLES);
   encoder_output_buffer = (uint8_t *)malloc(OPUS_OUT_BUFFER_SIZE);
+  printf("Initialized OPUS encoder");
 }
 
 void oai_send_audio(PeerConnection *peer_connection) {

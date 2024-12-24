@@ -14,7 +14,7 @@ static void oai_event_handler(void *arg, esp_event_base_t event_base,
                               int32_t event_id, void *event_data) {
   static int s_retry_num = 0;
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-    if (s_retry_num < 5) {
+    if (s_retry_num < 10) {
       esp_wifi_connect();
       s_retry_num++;
       ESP_LOGI(LOG_TAG, "retry to connect to the AP");
